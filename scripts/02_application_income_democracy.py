@@ -161,7 +161,7 @@ def main():
         boot = (b.loc[G, ['se_lag_dem', 'se_lag_income', 'se_cumulative_income']].to_numpy()
                 if G in b.index else [np.nan] * 3)
         if BOOTSTRAP_B > 0 and G >= 2:
-            bs = gfe_bootstrap(f, B=BOOTSTRAP_B, algorithm='vns', fun=cum, seed=rng.integers(1e9),
+            bs = gfe_bootstrap(f, B=BOOTSTRAP_B, algorithm='vns', fun=cum, seed=rng.integers(10**9),
                                cores=CORES, n_starts=5, neighmax=10, itermax=5)
             boot = bs['se']
         rows.append({'G': G, 'objective': f.objective, 'BIC': bic.loc[G, 'BIC'],
