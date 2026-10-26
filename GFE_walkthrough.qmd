@@ -1,0 +1,329 @@
+---
+title: "Grouped Patterns of Heterogeneity in Panel Data: a walkthrough in Python"
+subtitle: "Following Bonhomme and Manresa (2015, *Econometrica*)"
+author:
+  - name: Eliot R. Weinstein
+    email: eliotw@uchicago.edu
+    url: https://erweinstein.com
+format:
+  html:
+    toc: true
+    number-sections: true
+    embed-resources: true
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+---
+
+```{python}
+#| label: setup
+#| include: false
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from gfe import (load_bm_panel, load_bm_published, gfe, gfe_panel, gfe_bic,
+                 gfe_bruteforce, gfe_exact_bb, gfe_within, gfe_vcov_largeT,
+                 gfe_vcov_fixedT, gfe_bandwidth, gfe_se_theta, gfe_delta,
+                 match_groups, group_means, plot_profiles)
+pd.set_option('display.precision', 3)
+```
+
+::: {.callout-note}
+## Credit {.unnumbered}
+
+The grouped fixed-effects (GFE) estimator, its theory, the algorithms, the
+empirical application, and the original MATLAB, Fortran, and Stata code are by
+**Stéphane Bonhomme and Elena Manresa**:
+
+Bonhomme, S. and E. Manresa (2015), "Grouped Patterns of Heterogeneity in Panel
+Data," *Econometrica* 83(3), 1147–1184. [doi:10.3982/ECTA11319](https://doi.org/10.3982/ECTA11319)
+
+This document walks through their paper with a Python translation of their
+replication files. The structure of the argument, the notation, and the
+numbers come from the paper and its Supplementary Appendix. The translation
+and this walkthrough are by Eliot R. Weinstein; errors of translation are mine.
+:::
+
+# The question
+
+Panel data let us control for unobserved heterogeneity, and the standard way to
+do so is with unit fixed effects. Fixed effects are time-invariant. In many
+applications, though, the unobservables we worry about move over time, and they
+move differently for different units. Bonhomme and Manresa's application is a
+clear case: the relationship between income and democracy. In a large
+cross-country panel, pooled regressions show a strong positive association
+between lagged income and democracy, and fixed-effects regressions show
+essentially none (Acemoglu, Johnson, Robinson, and Yared, 2008). A fixed effect
+absorbs a country's average level of democracy. It cannot absorb the fact that
+Spain and Portugal democratized in the 1970s, much of Latin America in the
+1980s, and much of Sub-Saharan Africa in the 1990s.
+
+Interactive (factor) fixed effects allow for time-varying unobservables, at the
+price of many parameters and a bias of order $1/T$ in short panels. Bonhomme
+and Manresa propose a more parsimonious structure: unobserved heterogeneity
+varies over time, but countries fall into a small number of groups that share
+the same time path. Group membership is not known; it is estimated from the
+data.
+
+# The model and the estimator
+
+For units $i = 1, \dots, N$ and periods $t = 1, \dots, T$,
+
+$$
+y_{it} = x_{it}'\theta + \alpha_{g_i t} + v_{it},
+$$
+
+where $g_i \in \{1, \dots, G\}$ is the group of unit $i$, and $\alpha_{gt}$ is
+the time effect of group $g$ in period $t$. The GFE estimator minimizes the sum
+of squared residuals over the grouping, the group paths, and $\theta$:
+
+$$
+(\hat\theta, \hat\alpha, \hat\gamma) = \underset{(\theta, \alpha, \gamma)}{\operatorname{argmin}}
+\sum_{i=1}^N \sum_{t=1}^T \left( y_{it} - x_{it}'\theta - \alpha_{g_i t} \right)^2 .
+$$
+
+Two observations organize everything that follows.
+
+1. **Given the grouping, the problem is OLS** on $x_{it}$ and a full set of
+   group-by-period dummies.
+2. **Given the parameters, the grouping is a nearest-path assignment:**
+   $$
+   \hat g_i(\theta, \alpha) = \underset{g \in \{1,\dots,G\}}{\operatorname{argmin}}
+   \sum_{t=1}^T \left( y_{it} - x_{it}'\theta - \alpha_{gt} \right)^2 .
+   $$
+
+Without covariates this is exactly the $k$-means problem. With covariates it is
+$k$-means in which the points themselves, $y_i - x_i\theta$, depend on the
+parameter being estimated.
+
+## The data
+
+The five-year balanced panel of Acemoglu et al. (2008): 90 countries observed
+every five years from 1970 to 2000. The outcome is the Freedom House democracy
+index (between 0 and 1); the covariates are lagged democracy and lagged log GDP
+per capita:
+
+$$
+\text{dem}_{it} = \theta_1 \, \text{dem}_{i,t-1} + \theta_2 \, \text{income}_{i,t-1} + \alpha_{g_i t} + v_{it}.
+$$
+
+The quantity of interest is the cumulative income effect $\theta_2 / (1 - \theta_1)$.
+
+```{python}
+#| label: data
+p = load_bm_panel()
+pub = load_bm_published()
+print(p)
+p.data.head(8)
+```
+
+The data are stacked unit by unit, as in the original code: element $iT + t$
+(counting from 0) holds unit $i$ in period $t$. Groups are labeled
+$0, \dots, G-1$ inside the Python package; the paper's labels are one higher.
+
+# Computation
+
+The number of possible groupings is $G^N$; with $N = 90$ and $G = 4$ that is
+about $10^{54}$, so the paper gives two heuristics and an exact method to check
+them.
+
+## Algorithm 1: alternate between the two steps
+
+Start from random $(\theta^{(0)}, \alpha^{(0)})$, then alternate the assignment
+and update steps until the grouping no longer changes. Each step weakly lowers
+the objective, so the algorithm converges, but only to a local minimum.
+
+```{python}
+#| label: alg1-starts
+a1 = gfe(p, G=3, algorithm='alg1', n_starts=200, seed=1)
+print(a1)
+```
+
+The distribution of the objective across starting values shows how many local
+minima there are:
+
+```{python}
+#| label: alg1-hist
+#| fig-width: 6
+#| fig-height: 3.5
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.hist(a1.objectives_by_start, bins=40, color='0.8', edgecolor='white')
+ax.axvline(a1.objectives_by_start.min(), color='black', lw=2)
+ax.set_xlabel('objective at convergence, Algorithm 1 (G = 3, 200 starts)')
+plt.show()
+```
+
+## Algorithm 2: variable neighborhood search
+
+VNS adds a *local search*, which tries to move each unit to every other group
+and keeps any move that lowers the objective, and random *jumps* that relocate
+$n = 1, 2, \dots$ units at once to escape a local minimum. The paper uses
+tuning parameters $(N_s; n_{\max}; j_{\max}) = (10; 10; 10)$ and recommends
+checking that different starting values yield exactly the same solution.
+
+```{python}
+#| label: vns
+v3 = gfe(p, G=3, algorithm='vns', n_starts=3, neighmax=10, itermax=10, seed=2)
+print(v3)
+```
+
+## Checking the heuristics: an exact solution
+
+The Supplementary Appendix verifies the heuristics where the global minimum can
+be certified, with an extension of Brusco's (2006) branch and bound to models
+with covariates (`scripts/03_exact_algorithm.py`). A toy version:
+
+```{python}
+#| label: exact-toy
+rng = np.random.default_rng(3)
+toy = gfe_panel(rng.normal(size=40), rng.normal(size=(40, 2)), N=10, T=4)
+print({'brute_force': float(gfe_bruteforce(toy, 2)['objective']),
+       'branch_bound': gfe_exact_bb(toy, 2, seed=3).objective,
+       'vns': gfe(toy, 2, n_starts=2, seed=3).objective})
+```
+
+## Does the search find the published solution?
+
+```{python}
+#| label: vns-vs-published
+f3 = gfe(p, 3, groups=pub['groupings']['G3'])
+print(f3.objective, v3.objective)
+print(match_groups(v3.groups, f3.groups, 3)['misclassification'])
+```
+
+# Estimates and the number of groups
+
+Given the groupings, the estimates for $G = 1, \dots, 15$ follow almost
+instantly. $G = 1$ is the model with common time effects and no unit effects.
+
+```{python}
+#| label: estimates-by-G
+def cum(th):
+    return th[1] / (1 - th[0])
+
+fits = [gfe(p, G, groups=None if G == 1 else pub['groupings'][f'G{G}']) for G in range(1, 16)]
+bic = gfe_bic(fits)
+est = pd.DataFrame({'G': range(1, 16), 'objective': [f.objective for f in fits],
+                    'BIC': bic['BIC'], 'theta1': [f.theta[0] for f in fits],
+                    'theta2': [f.theta[1] for f in fits],
+                    'cumulative': [cum(f.theta) for f in fits]})
+est
+```
+
+The BIC,
+
+$$
+\mathrm{BIC}(G) = \frac{1}{NT} \hat Q(G) + \hat\sigma^2 \, \frac{GT + N + K}{NT} \, \ln(NT),
+\qquad \hat\sigma^2 = \frac{\hat Q(G_{\max})}{NT - G_{\max}T - N - K},
+$$
+
+selects G = `{python} bic.attrs['G_BIC']`. The paper's headline results use
+$G = 4$, which is easier to interpret and gives very similar estimates of the
+income effect. With country fixed effects instead:
+
+```{python}
+#| label: fixed-effects
+fe = gfe(gfe_within(p), 1)
+print({'theta1': round(float(fe.theta[0]), 3), 'theta2': round(float(fe.theta[1]), 3),
+       'cumulative': round(float(cum(fe.theta)), 3)})
+```
+
+GFE lands in between: allowing countries to follow a handful of distinct
+democratization paths roughly halves the pooled income effect, without wiping
+it out.
+
+# Inference
+
+Theorem 2 of the paper shows that, as $N$ and $T$ grow with $N/T^\nu \to 0$
+for some $\nu > 0$, $\hat\theta$ is asymptotically equivalent to OLS with the
+true groups, so standard errors can be computed as if the groups were known
+(the "large-$T$" variance). With $T = 7$ that is optimistic. The paper also
+reports a fixed-$T$ variance based on Pollard's (1982) asymptotics for
+$k$-means, and a bootstrap that resamples whole countries.
+
+```{python}
+#| label: inference-G4
+def cum_grad(th):
+    return np.array([th[1] / (1 - th[0]) ** 2, 1 / (1 - th[0])])
+
+f4 = fits[3]
+V_lt = gfe_vcov_largeT(f4)
+V_ft = gfe_vcov_fixedT(f4, eps=gfe_bandwidth(f4))
+boot = pub['bootstrap_se'].set_index('G').loc[4]
+pd.DataFrame({
+    'estimate': [f4.theta[0], f4.theta[1], cum(f4.theta)],
+    'large-T': list(gfe_se_theta(f4, V_lt)) + [np.sqrt(gfe_delta(f4, V_lt, cum_grad(f4.theta)))],
+    'fixed-T': list(gfe_se_theta(f4, V_ft)) + [np.sqrt(gfe_delta(f4, V_ft, cum_grad(f4.theta)))],
+    'bootstrap': [boot.se_lag_dem, boot.se_lag_income, boot.se_cumulative_income]},
+    index=['theta1', 'theta2', 'cumulative']).T
+```
+
+The fixed-$T$ and bootstrap standard errors are larger than the large-$T$ ones.
+The Monte Carlo exercises of the Supplementary Appendix, calibrated to these
+data (`scripts/04_montecarlo.py`), show that the large-$T$ intervals undercover
+at this sample size, while the fixed-$T$ and bootstrap intervals have close to
+nominal coverage.
+
+# Grouped patterns of democracy
+
+With $G = 4$ the estimated paths have a clear interpretation: a high-democracy
+group, a low-democracy group, and two groups that democratize, an "early
+transition" group in the 1970s and 1980s and a "late transition" group in the
+1990s.
+
+```{python}
+#| label: figure2
+#| fig-width: 11
+#| fig-height: 4.3
+paper_labels = np.array([1, 2, 3, 0])     # published label -> paper's label (0-based; see scripts/02)
+f4 = gfe(p, 4, groups=paper_labels[pub['groupings']['G4'].to_numpy()])
+names = ['1: high democracy', '2: low democracy', '3: early transition', '4: late transition']
+cols, ltys = ['0', '0.6', '0.4', '0.75'], ['-', '-.', '--', '-']
+fig, axes = plt.subplots(1, 3, figsize=(11, 4.3))
+plot_profiles(axes[0], f4.alpha, p.time_labels, 'time effects', colors=cols, linestyles=ltys, labels=names)
+plot_profiles(axes[1], group_means(f4, p.y), p.time_labels, 'democracy', ylim=(0, 1), colors=cols, linestyles=ltys)
+plot_profiles(axes[2], group_means(f4, p.X[:, 1]), p.time_labels, 'income', ylim=(7, 9.5), colors=cols, linestyles=ltys)
+fig.legend(loc='lower center', ncol=4, frameon=False)
+fig.tight_layout(rect=(0, 0.08, 1, 1))
+plt.show()
+```
+
+```{python}
+#| label: membership
+pd.Series(p.unit_labels).groupby([names[g] for g in f4.groups]).agg(list)
+```
+
+In 1970 the late transition group looks much like the low-democracy group, in
+democracy and in income, yet the two paths separate sharply in the 1990s.
+
+# Robustness and extensions
+
+`scripts/05_extensions.py` reproduces each robustness exercise of the
+Supplementary Appendix: GFE in deviations from country means (the income
+effect disappears, but the classification into stable, early-transition, and
+late-transition countries survives for 80 of 90 countries), two layers of
+groups, and heterogeneous coefficients. `scripts/06_explaining_the_waves.py`
+relates the groups to historical and economic covariates with multinomial
+logits: constraints on the executive at independence separate high- from
+low-democracy countries, but nothing in the list predicts which
+non-democracies transition.
+
+# Notes on the workflow
+
+- *The estimator is an optimization problem first.* Estimation, inference,
+  model selection, and the extensions are all built on the same two steps.
+- *Computation is checked, not assumed:* many starting values, an explicit
+  rule that different starts should reach the same solution, and an exact
+  algorithm to certify the heuristics.
+- *Theory is paired with a calibrated simulation*, so the finite-sample
+  evidence speaks to the application at hand.
+- *Robustness is organized around the main finding.*
+
+# References
+
+- Acemoglu, D., S. Johnson, J. A. Robinson, and P. Yared (2008), "Income and Democracy," *American Economic Review* 98(3), 808–842.
+- Bonhomme, S. and E. Manresa (2015), "Grouped Patterns of Heterogeneity in Panel Data," *Econometrica* 83(3), 1147–1184, and Supplementary Appendix.
+- Brusco, M. J. (2006), "A Repetitive Branch-and-Bound Procedure for Minimum Within-Cluster Sums of Squares Partitioning," *Psychometrika* 71(2), 347–363.
+- Hansen, P. and N. Mladenović (2001), "Variable Neighborhood Search: Principles and Applications," *European Journal of Operational Research* 130(3), 449–467.
+- Pollard, D. (1982), "A Central Limit Theorem for k-Means Clustering," *Annals of Probability* 10(4), 919–926.

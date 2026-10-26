@@ -1,0 +1,9 @@
+# Required
+numpy>=1.22
+scipy>=1.9
+pandas>=1.5
+matplotlib>=3.5
+
+# Optional
+numba>=0.56      # compiles the exact branch-and-bound algorithm (gfe/exact.py)
+pytest>=7        # runs tests/
