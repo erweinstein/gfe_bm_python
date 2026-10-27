@@ -72,7 +72,8 @@ script has the required `if __name__ == "__main__":` guard).
 ## What is here
 
 ```
-LICENSE                     GNU GPL (>= 2) for the translation, with scope note
+LICENSE                     BSD 3-Clause License for the translation
+NOTICE.md                   what the license covers, and attribution
 CITATION.md                 how to cite the paper, the data, and this translation
 EXAMPLE.md                  a first exercise: change G and the starting values
 GFE_walkthrough.qmd         a reading of the paper with the code (Quarto, Python)
@@ -217,14 +218,15 @@ These are documented in the code where they occur.
 
 ## License
 
-The Python translation is Copyright (C) 2026 Eliot R. Weinstein and is licensed
-under the GNU General Public License, version 2 or (at your option) any later
-version; see `LICENSE`.
+The Python translation is Copyright (c) 2026 Eliot R. Weinstein and is licensed
+under the BSD 3-Clause License (`LICENSE`), the license of NumPy, SciPy,
+pandas, scikit-learn, and statsmodels. (The companion R translation,
+gfe_bm_R, uses the GNU GPL, following the R community's convention.)
 
 The license covers only the translation: the Python code, the scripts, the
 tests, and the documentation. It grants no rights in the grouped fixed-effects
 method and the original MATLAB, Fortran, and Stata code, which are Stéphane
 Bonhomme and Elena Manresa's, or in the data, which come from Acemoglu,
 Johnson, Robinson, and Yared (2008) via Bonhomme and Manresa's replication
-files. Both remain subject to their own terms. If you use this code, please
-cite Bonhomme and Manresa (2015); see `CITATION.md`.
+files. Both remain subject to their own terms; see `NOTICE.md`. If you use this
+code, please cite Bonhomme and Manresa (2015); see `CITATION.md`.

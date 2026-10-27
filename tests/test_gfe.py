@@ -11,8 +11,9 @@ number published in the paper. Run from the project folder with
 Validation against all the published tables is in
 scripts/01_validate_against_published.py.
 
-Python translation Copyright (C) 2026 Eliot R. Weinstein. Licensed under the
-GNU GPL, version 2 or (at your option) any later version; see LICENSE.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 import itertools

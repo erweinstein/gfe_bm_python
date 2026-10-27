@@ -66,9 +66,8 @@ Bonhomme and Manresa (2015):
 }
 ```
 
-The Python translation is licensed under the GNU General Public License, version 2
-or (at your option) any later version; see `LICENSE`, which also explains what
-the license does and does not cover.
+The Python translation is licensed under the BSD 3-Clause License; see
+`LICENSE`, and `NOTICE.md` for what the license does and does not cover.
 
 The Python translation is not endorsed by, and was not reviewed by, the original
 authors. It was translated from the R translation, gfe_bm_R

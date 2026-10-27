@@ -48,10 +48,9 @@ Two translation notes that matter everywhere in this package:
     commented. Mixing the two conventions is the single easiest way to break a
     MATLAB-to-Python port (I learned this the hard way porting rq.m).
 
-R translation Copyright (C) 2026 Eliot R. Weinstein; Python translation
-Copyright (C) 2026 Eliot R. Weinstein. Licensed under the GNU GPL, version 2 or
-(at your option) any later version; see LICENSE. The license covers the
-translation only, not Bonhomme and Manresa's method or original code.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 from dataclasses import dataclass, field

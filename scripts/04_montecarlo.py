@@ -41,10 +41,9 @@ sample. The defaults below are much smaller so that the script runs in
 minutes; results then carry simulation noise of order 1/sqrt(N_REP). Each
 replication gets its own child seed, so results do not depend on CORES.
 
-Python translation Copyright (C) 2026 Eliot R. Weinstein. Licensed under the
-GNU GPL, version 2 or (at your option) any later version; see LICENSE. The
-license covers the translation only, not Bonhomme and Manresa's method or
-original code.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 import sys

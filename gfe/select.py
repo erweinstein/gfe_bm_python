@@ -21,10 +21,9 @@ BIC_G3_MC.m also computes an alternative with a steeper penalty,
 Both are returned. Consistency: G_hat is consistent for G0 if N and T grow at
 the same rate; if T/N -> 0 the BIC need not be consistent (Section S.3.2).
 
-R translation Copyright (C) 2026 Eliot R. Weinstein; Python translation
-Copyright (C) 2026 Eliot R. Weinstein. Licensed under the GNU GPL, version 2 or
-(at your option) any later version; see LICENSE. The license covers the
-translation only, not Bonhomme and Manresa's method or original code.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 import numpy as np

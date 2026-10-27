@@ -17,8 +17,9 @@ Usage (from the project folder):
     fit = gfe(p, G=4, algorithm='vns', n_starts=10, neighmax=10, itermax=10, seed=1)
     print(fit)
 
-Python translation Copyright (C) 2026 Eliot R. Weinstein. Licensed under the
-GNU GPL, version 2 or (at your option) any later version; see LICENSE.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 from .core import (GFEPanel, GFEFit, gfe_panel, gfe_panel_from_df, gfe_update,

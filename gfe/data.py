@@ -5,10 +5,9 @@ Johnson, Robinson, and Yared (2008), N = 90 countries, T = 7 (1970-2000),
 exactly as stored in Bonhomme and Manresa's final_data.mat (shipped here as
 data/bm_final_data.csv).
 
-R translation Copyright (C) 2026 Eliot R. Weinstein; Python translation
-Copyright (C) 2026 Eliot R. Weinstein. Licensed under the GNU GPL, version 2 or
-(at your option) any later version; see LICENSE. The license covers the
-translation only, not Bonhomme and Manresa's method or original code.
+Python translation Copyright (c) 2026 Eliot R. Weinstein. Licensed under the
+BSD 3-Clause License; see LICENSE and NOTICE.md (the license covers the
+translation only, not Bonhomme and Manresa's method or original code).
 '''
 
 from pathlib import Path
