@@ -1,0 +1,4 @@
+sample,G,method,objective,theta1,theta2,misclassified_vs_exact
+first 30 countries (4-decimal data),2,exact (branch & bound),6.159133947877657,0.607020790115202,0.06894648106133512,0
+first 30 countries (4-decimal data),2,"Algorithm 1 (1,000 starts)",6.159133947877657,0.607020790115202,0.06894648106133512,0
+first 30 countries (4-decimal data),2,"Algorithm 2, VNS (10; 10; 10)",6.159133947877657,0.607020790115202,0.06894648106133512,0

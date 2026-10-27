@@ -155,14 +155,22 @@ subject to their original terms (see "License" below).
 The numbers below were produced by the scripts in this folder; they agree with
 the R translation to all printed digits.
 
-- **Main estimates (Table S.XI).** Given the authors' groupings, 160 of 166
-  published entries (objective, BIC, coefficients, cumulative effect, large-T
-  and fixed-T standard errors, G = 1..15) agree to the third decimal, and the
-  other 6 differ by at most 0.001. The BIC selects G = 10, as in the paper.
+- **Main estimates (Table S.XI).** Given the authors' groupings, 162 of 168
+  comparisons (objective, BIC, coefficients, cumulative effect, large-T and
+  fixed-T standard errors, G = 1..15, plus the objectives found by search)
+  agree to the third decimal, and the other 6 differ by at most 0.001. The BIC
+  selects G = 10, as in the paper.
+- **Searching from scratch.** VNS with (10; 10; 10) recovers the published
+  groupings for G = 2, 3, 4, 5 with no country classified differently (10, 6,
+  4, and 3 of 10 starts reach the optimum; 4 to 11 seconds per G), and
+  Algorithm 1 with 1,000 starts reaches the same optima for G = 2 and 3.
+- **Exact algorithm (Table S.I).** For the first 30 countries and G = 2, the
+  numba-compiled branch and bound (161 million nodes, 33 seconds) gives
+  objective 6.159134 and theta = (0.6070, 0.0689), as in the authors'
+  RESULTS2.DAT and outputtheta.txt; Algorithm 1 and VNS reach the same
+  solution. It also agrees with brute-force enumeration on small problems.
 - **Table S.III** "true" values: 9 of 9. **Table S.XIV**: 20 of 20.
   **Table S.XV**: 20 of 20.
-- **Exact algorithm.** Branch and bound agrees with brute-force enumeration
-  on small simulated problems (tests).
 - **Table S.XVI.** Both heterogeneous-coefficient versions reproduce the
   published estimates and standard errors (using the groupings found by the R
   search).
@@ -170,12 +178,11 @@ the R translation to all printed digits.
   errors match, with N = 68 in column (10); the descriptive statistics match
   except two entries for log GDP per capita in 1500 (Group 1 s.d. 0.290 vs
   0.300; Group 3 mean 6.478 vs 6.49).
-- **Unit tests:** `python -m pytest tests` (18 tests).
+- **Unit tests:** `python -m pytest tests` (18 tests), run automatically on
+  Linux and Windows by GitHub Actions on every push.
 
-Not yet run in Python (expensive; the R versions were validated): the
-random-start searches of `scripts/01` Part B, the N = 30 exact solution of
-`scripts/03`, and a full-size Monte Carlo of `scripts/04`. See the R
-repository's README for those results.
+Not yet run at full size in Python (hours): the 1,000-replication Monte Carlo
+of `scripts/04` (a short run behaves as in R) and the N = 90 exact solution.
 
 ---
 
