@@ -208,7 +208,9 @@ the R translation to all printed digits.
   published Table S.VIII values are not in this repository, so we have not
   compared them; this needs checking against the paper before it is relied on.
   It may reflect how the penalty behaves in this design, or a difference from
-  `BIC_G3_MC.m`.
+  `BIC_G3_MC.m`. The R translation, run independently (30 replications), agrees:
+  G = 6 in 29 samples and G = 5 in 1. So the two ports match each other; what
+  remains is to compare both with the published table and `BIC_G3_MC.m`.
 
 Not yet run at full size in Python: the N = 90 exact solution.
 
