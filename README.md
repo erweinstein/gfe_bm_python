@@ -181,8 +181,27 @@ the R translation to all printed digits.
 - **Unit tests:** `python -m pytest tests` (18 tests), run automatically on
   Linux and Windows by GitHub Actions on every push.
 
-Not yet run at full size in Python (hours): the 1,000-replication Monte Carlo
-of `scripts/04` (a short run behaves as in R) and the N = 90 exact solution.
+- **Monte Carlo (Tables S.III–S.IV).** `scripts/04_montecarlo.py` with
+  i.i.d. errors (one core per run; 1,000 replications for G0 = 3, 600 for
+  G0 = 5 and 10; outputs in `output/montecarlo_G*_iid.csv`):
+
+  | G0 | GFE mean (theta1, theta2, cumulative) | Published | Misclassified (published) | Coverage, large-T / fixed-T, theta1 (published) |
+  |---|---|---|---|---|
+  | 3 | 0.391, 0.099, 0.164 | 0.391, 0.099, 0.163 | 9.7% (9.5%) | 0.86 / 0.96 (0.85 / 0.97) |
+  | 5 | 0.259, 0.087, 0.118 | 0.262, 0.086, 0.117 | 7.8% (9.7%) | 0.83 / 0.98 (0.85 / 0.96) |
+  | 10 | 0.282, 0.080, 0.111 | 0.286, 0.078, 0.110 | 16.6% (44.7%) | 0.80 / 0.93 (0.80 / 0.90) |
+
+  Means, standard errors, and coverage agree with the published tables to
+  within Monte Carlo error. The misclassification frequency for G0 = 10 is much
+  lower than published. We have not traced why; two candidates are how groups
+  are matched to the truth before counting (we use the exact Hungarian
+  matching) and VNS reaching better optima. Bootstrap standard errors
+  (`BOOTSTRAP_B > 0`) were not run at full size.
+- **Monte Carlo with wild-bootstrap errors (Section S.6.2).** G0 = 3, 600
+  replications (`output/montecarlo_G3_wild.csv`): GFE means 0.376, 0.094,
+  0.152; misclassification 9.2%; fixed-T coverage 0.83, 0.90, 0.93.
+
+Not yet run at full size in Python: the N = 90 exact solution.
 
 ---
 
