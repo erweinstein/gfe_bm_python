@@ -201,6 +201,15 @@ the R translation to all printed digits.
   replications (`output/montecarlo_G3_wild.csv`): GFE means 0.376, 0.094,
   0.152; misclassification 9.2%; fixed-T coverage 0.83, 0.90, 0.93.
 
+- **BIC choice of G (Table S.VIII), not yet checked.** G0 = 3, 100
+  replications, comparing G = 1 to 6 with sigma2_hat from G = 15 as in
+  `BIC_G3_MC.m` (`RUN_BIC = True`): the BIC chose G = 6 in 90 samples and
+  G = 5 in 10, never the true G = 3 (`output/tableS8_bic_choice_G3.csv`). The
+  published Table S.VIII values are not in this repository, so we have not
+  compared them; this needs checking against the paper before it is relied on.
+  It may reflect how the penalty behaves in this design, or a difference from
+  `BIC_G3_MC.m`.
+
 Not yet run at full size in Python: the N = 90 exact solution.
 
 ---
