@@ -16,7 +16,7 @@ branch-and-bound extension), the fixed-T variance, the Monte Carlo design, the
 empirical application, and the original MATLAB, Fortran, and Stata code are the
 work of **Stéphane Bonhomme and Elena Manresa**. This repository translates
 their replication package (`Bonhomme_Manresa_codes`, distributed with the paper
-by the Econometric Society) into Python, by way of my R translation,
+by the Econometric Society and on [Stéphane Bonhomme's website](https://sites.google.com/site/stephanebonhommeresearch/)) into Python, by way of my R translation,
 [gfe_bm_R](https://github.com/erweinstein/gfe_bm_R), which follows the
 original files line by line. Every source file names the original file it
 follows. Please cite their paper when you use this code (see `CITATION.md`).
@@ -203,7 +203,8 @@ the R translation to all printed digits.
   0.152; misclassification 9.2%; fixed-T coverage 0.83, 0.90, 0.93.
 
 - **BIC choice of G (Table S.VIII): reproduced, once the original code's
-  variance estimate is used.** `scripts/04b_bic_tableS8.py`, 100 samples,
+  variance estimate is used.** Full account in
+  [`NOTE_BIC_tableS8.md`](NOTE_BIC_tableS8.md). `scripts/04b_bic_tableS8.py`, 100 samples,
   groupings by Algorithm 1 with 100 starts (`output/tableS8_bic_G3.csv`,
   `output/tableS8_bic_G10.csv`):
 
@@ -237,7 +238,7 @@ the R translation to all printed digits.
   Q(G) more the larger G was (by 0.05 at G = 6, 0.23 at G = 12), and moved the
   choice up, from G = 7-11 in 3, 7, 9, 9, 2 samples to G = 7-10 in 1, 6, 13, 10,
   closer to the published distribution. The authors' groupings came from their
-  Fortran program (MC1.exe), which presumably searched harder.
+  Fortran program (MC1.exe), which may have searched harder.
 
   Our earlier runs (VNS, as in `04_montecarlo.py`: G = 6 in 90 of 100, G = 5 in
   10; the R translation: G = 6 in 29 of 30) used the own-fit sigma2_hat over

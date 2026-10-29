@@ -39,7 +39,19 @@ Please also cite, as relevant:
   *European Journal of Operational Research* 130(3), 449–467.
 
 The original replication package (`Bonhomme_Manresa_codes`) is distributed with
-the paper's supplemental material by the Econometric Society.
+the paper's supplemental material by the Econometric Society, and the paper, the
+Supplementary Appendix, the replication files, and a Stata implementation are
+available on Stéphane Bonhomme's website: https://sites.google.com/site/stephanebonhommeresearch/
+
+```bibtex
+@misc{BonhommeManresa2015code,
+  author       = {Bonhomme, St{\'e}phane and Manresa, Elena},
+  title        = {Replication files for ``Grouped Patterns of Heterogeneity in Panel Data''},
+  year         = {2015},
+  howpublished = {\url{https://sites.google.com/site/stephanebonhommeresearch/}},
+  note         = {Includes MonteCarlo/BIC\_G3\_MC.m and BIC\_G10\_MC.m; accessed 29 October 2026}
+}
+```
 
 ## The Python translation
 
