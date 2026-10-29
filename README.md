@@ -201,16 +201,35 @@ the R translation to all printed digits.
   replications (`output/montecarlo_G3_wild.csv`): GFE means 0.376, 0.094,
   0.152; misclassification 9.2%; fixed-T coverage 0.83, 0.90, 0.93.
 
-- **BIC choice of G (Table S.VIII), not yet checked.** G0 = 3, 100
-  replications, comparing G = 1 to 6 with sigma2_hat from G = 15 as in
-  `BIC_G3_MC.m` (`RUN_BIC = True`): the BIC chose G = 6 in 90 samples and
-  G = 5 in 10, never the true G = 3 (`output/tableS8_bic_choice_G3.csv`). The
-  published Table S.VIII values are not in this repository, so we have not
-  compared them; this needs checking against the paper before it is relied on.
-  It may reflect how the penalty behaves in this design, or a difference from
-  `BIC_G3_MC.m`. The R translation, run independently (30 replications), agrees:
-  G = 6 in 29 samples and G = 5 in 1. So the two ports match each other; what
-  remains is to compare both with the published table and `BIC_G3_MC.m`.
+- **BIC choice of G (Table S.VIII): does not reproduce the published result.**
+  G0 = 3, 100 replications, comparing G = 1 to 6 with sigma2_hat from G = 15 as
+  in `BIC_G3_MC.m` (`RUN_BIC = True`): the BIC chose G = 6 in 90 samples and
+  G = 5 in 10, never the true G = 3 (`output/tableS8_bic_choice_G3.csv`). The R
+  translation, run independently (30 replications), agrees: G = 6 in 29 and
+  G = 5 in 1. The published Table S.VIII (supplementary appendix) reports G = 3
+  in 98% of samples and G = 4 in 2% for G0 = 3, and for G0 = 10 a spread over
+  G = 8 to 11 (10%, 42%, 42%, 6%).
+
+  What we checked. (1) The penalty: we use the appendix's formula (S20),
+  BIC(G) = Q(G)/NT + sigma2_hat (GT + N + K)/NT ln(NT), with sigma2_hat =
+  Q(Gmax)/(NT - Gmax T - N - K) (footnote 12), Gmax = 15. (2) sigma2_hat: it
+  averages 0.021-0.024 across samples against a true error variance of 0.032, so
+  the penalty is about 30% too small, which favours larger G. (3) The optimizer:
+  with 10 and 100 random starts of Algorithm 1 and with VNS (20 replications
+  each), the BIC chose G = 4-6 in every sample; a better optimizer lowers
+  Q(Gmax) further and makes the choice worse (VNS: G = 6 in 19 of 20). (4) The
+  true variance: plugging in sigma2 = 0.032 still gives G = 3 in only 4-6 of 20
+  samples (mostly G = 4). So neither the optimizer nor the variance estimate
+  alone explains the gap between our results and the published 98%. Footnote 27
+  of the appendix reports that a steeper penalty chose G = 1 in every
+  simulation, which suggests the published choice is sensitive to the penalty's
+  scale.
+
+  Most likely the original Monte Carlo differs from (S20) in a detail the
+  appendix does not state (the scale of sigma2_hat, the G range, or the data
+  generating process used for this table). Resolving it needs the original
+  `MonteCarlo/BIC_G3_MC.m`, which is not in this repository. Until then, do not
+  rely on the BIC Monte Carlo here.
 
 Not yet run at full size in Python: the N = 90 exact solution.
 
