@@ -70,8 +70,18 @@ VNS_TUNING = {'n_starts': 5, 'neighmax': 10, 'itermax': 5}     # (5; 10; 5)
 BOOTSTRAP_B = 0        # 100 in the paper (with Algorithm 1, 1,000 starts)
 BOOT_TUNING = {'algorithm': 'alg1', 'n_starts': 100}          # paper: 1,000 starts
 RUN_BIC = False        # Table S.VIII: BIC choice of G across simulated samples
-BIC_G = [1, 2, 3, 4, 5, 6]
-BIC_GMAX = 15          # G used for sigma2_hat in the BIC penalty (as in BIC_G3_MC.m)
+BIC_G = {3: list(range(1, 8)), 10: list(range(3, 16))}.get(G0, list(range(1, 8)))  # as in BIC_G3_MC.m, BIC_G10_MC.m
+BIC_GMAX = 15          # G used for sigma2_hat in the BIC penalty (footnote 12)
+# Where the G = 15 grouping for sigma2_hat comes from:
+#   'own'     each sample's own G = 15 fit, as (S20) and footnote 12 describe
+#             (and as BIC_G10_MC.m does);
+#   'g0_10'   as BIC_G3_MC.m does for G0 = 3: it loads assignmentG010G15.txt, the
+#             G = 15 groupings estimated on the G0 = 10 simulated samples, and
+#             applies them to the G0 = 3 samples. Those groupings do not fit the
+#             G0 = 3 data, so sigma2_hat is about twice as large, and the
+#             penalty with it. This reproduces the published Table S.VIII
+#             (G = 3 in 98% of samples); 'own' chooses G = 5-6 instead.
+BIC_SIGMA2 = 'own'
 CORES = 1
 SEED = 20150501
 
@@ -128,7 +138,7 @@ def simulate_panel(truth, dgp, sigma2_naive, rng):
 
 def one_replication(args):
     '''One Monte Carlo replication (top-level, so worker processes can run it).'''
-    r, truth, theta0, sigma2_naive, seed = args
+    r, truth, theta0, sigma2_naive, seed, truth10 = args
     rng = np.random.default_rng(seed)
     ps = simulate_panel(truth, DGP, sigma2_naive, rng)
     fit = gfe(ps, G0, algorithm='vns', seed=rng, **VNS_TUNING)
@@ -159,7 +169,15 @@ def one_replication(args):
     if RUN_BIC:
         out['bic_Q'] = np.array([gfe(ps, G, algorithm='vns', seed=rng, **VNS_TUNING).objective
                                  for G in BIC_G])
-        Qmax = gfe(ps, BIC_GMAX, algorithm='vns', seed=rng, **VNS_TUNING).objective
+        if BIC_SIGMA2 == 'g0_10':
+            # Emulates BIC_G3_MC.m: a G = 15 grouping estimated on an independent
+            # G0 = 10 sample, applied to this G0 = 3 sample.
+            t10, s10 = truth10
+            p10 = simulate_panel(t10, DGP, s10, rng)
+            g15 = gfe(p10, BIC_GMAX, algorithm='vns', seed=rng, **VNS_TUNING).groups
+            Qmax = gfe(ps, BIC_GMAX, groups=g15).objective
+        else:
+            Qmax = gfe(ps, BIC_GMAX, algorithm='vns', seed=rng, **VNS_TUNING).objective
         out['bic_sigma2'] = Qmax / (ps.N * ps.T - BIC_GMAX * ps.T - ps.N - ps.K)
     return out
 
@@ -181,7 +199,11 @@ def main():
     # 2-3. Run the replications (optionally in parallel; works on Windows
     # because of the `if __name__ == "__main__"` guard below).
     seeds = np.random.SeedSequence(SEED).spawn(N_REP)
-    jobs = [(r, truth, theta0, sigma2_naive, seeds[r]) for r in range(N_REP)]
+    truth10 = None
+    if RUN_BIC and BIC_SIGMA2 == 'g0_10':
+        t10 = gfe(p, 10, groups=pub['G10'])
+        truth10 = (t10, t10.objective / (N * T - 10 * T - N - K))
+    jobs = [(r, truth, theta0, sigma2_naive, seeds[r], truth10) for r in range(N_REP)]
     t0 = time.time()
     if CORES > 1:
         with ProcessPoolExecutor(max_workers=CORES) as ex:
@@ -247,8 +269,10 @@ def main():
         s2 = np.mean([s['bic_sigma2'] for s in sims])
         bic = Qm / NT + s2 * np.log(NT) * (np.array(BIC_G) * T + N + K) / NT
         choice = np.array(BIC_G)[bic.argmin(axis=1)]
-        print(f'\nBIC choice of G across {N_REP} samples (true G0 = {G0}):')
-        print(pd.Series(choice).value_counts().reindex(BIC_G, fill_value=0))
+        print(f'\nBIC choice of G across {N_REP} samples (true G0 = {G0}; sigma2_hat = {s2:.4f}, source {BIC_SIGMA2!r}):')
+        tab = pd.Series(choice).value_counts().reindex(BIC_G, fill_value=0)
+        print(tab)
+        tab.rename_axis('G').rename('samples').to_csv(out_dir / f'tableS8_bic_choice_G{G0}_{BIC_SIGMA2}.csv')
 
 
 if __name__ == '__main__':

@@ -97,6 +97,7 @@ scripts/01_validate_against_published.py   Tables S.I, S.III, S.XI, S.XIV, S.XV
 scripts/02_application_income_democracy.py Table S.XI, Figures 1, 2, S.4
 scripts/03_exact_algorithm.py              Table S.I (exact vs heuristics)
 scripts/04_montecarlo.py                   Tables S.III-S.VIII, Figure S.1
+scripts/04b_bic_tableS8.py                 Table S.VIII under both readings of the BIC penalty
 scripts/05_extensions.py                   Tables S.XIV-S.XVI, Figures S.5-S.7
 scripts/06_explaining_the_waves.py         Tables S.XVII-S.XVIII
 tests/test_gfe.py           unit tests (pytest) against brute force, direct
@@ -201,35 +202,46 @@ the R translation to all printed digits.
   replications (`output/montecarlo_G3_wild.csv`): GFE means 0.376, 0.094,
   0.152; misclassification 9.2%; fixed-T coverage 0.83, 0.90, 0.93.
 
-- **BIC choice of G (Table S.VIII): does not reproduce the published result.**
-  G0 = 3, 100 replications, comparing G = 1 to 6 with sigma2_hat from G = 15 as
-  in `BIC_G3_MC.m` (`RUN_BIC = True`): the BIC chose G = 6 in 90 samples and
-  G = 5 in 10, never the true G = 3 (`output/tableS8_bic_choice_G3.csv`). The R
-  translation, run independently (30 replications), agrees: G = 6 in 29 and
-  G = 5 in 1. The published Table S.VIII (supplementary appendix) reports G = 3
-  in 98% of samples and G = 4 in 2% for G0 = 3, and for G0 = 10 a spread over
-  G = 8 to 11 (10%, 42%, 42%, 6%).
+- **BIC choice of G (Table S.VIII): reproduced, once the original code's
+  variance estimate is used.** `scripts/04b_bic_tableS8.py`, 100 samples,
+  groupings by Algorithm 1 with 100 starts (`output/tableS8_bic_G3.csv`,
+  `output/tableS8_bic_G10.csv`):
 
-  What we checked. (1) The penalty: we use the appendix's formula (S20),
-  BIC(G) = Q(G)/NT + sigma2_hat (GT + N + K)/NT ln(NT), with sigma2_hat =
-  Q(Gmax)/(NT - Gmax T - N - K) (footnote 12), Gmax = 15. (2) sigma2_hat: it
-  averages 0.021-0.024 across samples against a true error variance of 0.032, so
-  the penalty is about 30% too small, which favours larger G. (3) The optimizer:
-  with 10 and 100 random starts of Algorithm 1 and with VNS (20 replications
-  each), the BIC chose G = 4-6 in every sample; a better optimizer lowers
-  Q(Gmax) further and makes the choice worse (VNS: G = 6 in 19 of 20). (4) The
-  true variance: plugging in sigma2 = 0.032 still gives G = 3 in only 4-6 of 20
-  samples (mostly G = 4). So neither the optimizer nor the variance estimate
-  alone explains the gap between our results and the published 98%. Footnote 27
-  of the appendix reports that a steeper penalty chose G = 1 in every
-  simulation, which suggests the published choice is sensitive to the penalty's
-  scale.
+  | G0 = 3: source of sigma2_hat | sigma2_hat | G = 3 | G = 4 | G = 5 | G = 6 | G = 7 |
+  |---|---|---|---|---|---|---|
+  | each sample's own G = 15 fit, as (S20) and footnote 12 describe | 0.023 | 0 | 2 | 43 | 51 | 4 |
+  | G = 15 groupings from the G0 = 10 samples, as `BIC_G3_MC.m` does | 0.044 | **98** | **2** | 0 | 0 | 0 |
+  | true error variance | 0.032 | 15 | 76 | 9 | 0 | 0 |
+  | published | | 98 | 2 | 0 | 0 | 0 |
 
-  Most likely the original Monte Carlo differs from (S20) in a detail the
-  appendix does not state (the scale of sigma2_hat, the G range, or the data
-  generating process used for this table). Resolving it needs the original
-  `MonteCarlo/BIC_G3_MC.m`, which is not in this repository. Until then, do not
-  rely on the BIC Monte Carlo here.
+  The difference is one line of `MonteCarlo/BIC_G3_MC.m`:
+  `BigG = load('assignmentG010G15.txt')`. It computes sigma2_hat for the
+  G0 = 3 samples from the G = 15 groupings estimated on the G0 = 10 samples
+  (the same file `BIC_G10_MC.m` loads), so the groupings do not belong to the
+  data they are applied to. Q(15) is then much larger than the samples' own
+  G = 15 fit, sigma2_hat roughly doubles, and so does the penalty. With the
+  variance estimate the text describes, the BIC overfits (G = 5 or 6); with the
+  true variance it still picks G = 4 most often. So the published 98% depends on
+  the inflated penalty. The appendix's footnote 27 (a steeper penalty chose
+  G = 1 in every simulation) is consistent with the choice being sensitive to
+  the penalty's scale. `04_montecarlo.py` offers both readings
+  (`BIC_SIGMA2 = 'own'` or `'g0_10'`) and now compares G = 1..7, as the
+  original does.
+
+  For G0 = 10, `BIC_G10_MC.m` uses each sample's own G = 15 fit, and sigma2_hat
+  is close to the true variance (0.0165 against 0.0166). Over G = 3..15 the BIC
+  chose G = 8, 9, 10, 11 in 27, 46, 19, 2 samples (and G = 6-7 in 6), against
+  the published 10, 42, 42, 6: the same centre, shifted down by about half a
+  group. The shift comes from the search, not the penalty: in 30 samples
+  (G = 6..12, true variance), keeping the better of Algorithm 1 and VNS lowered
+  Q(G) more the larger G was (by 0.05 at G = 6, 0.23 at G = 12), and moved the
+  choice up, from G = 7-11 in 3, 7, 9, 9, 2 samples to G = 7-10 in 1, 6, 13, 10,
+  closer to the published distribution. The authors' groupings came from their
+  Fortran program (MC1.exe), which presumably searched harder.
+
+  Our earlier runs (VNS, as in `04_montecarlo.py`: G = 6 in 90 of 100, G = 5 in
+  10; the R translation: G = 6 in 29 of 30) used the own-fit sigma2_hat over
+  G = 1..6 and agree with the first row.
 
 Not yet run at full size in Python: the N = 90 exact solution.
 
@@ -261,8 +273,12 @@ These are documented in the code where they occur.
 - **Monte Carlo errors, alternative DGP.** The text of Section S.6.2 describes
   resampling residual vectors; `DGP_final.m` uses a wild bootstrap. Both are
   available (`DGP = 'resample'`, `DGP = 'wild'`).
-- **BIC in the Monte Carlo.** `BIC_G3_MC.m` averages sigma2_hat across
-  simulated samples; the script does the same.
+- **BIC in the Monte Carlo.** `BIC_G3_MC.m` and `BIC_G10_MC.m` average
+  sigma2_hat across simulated samples and use the average in every sample; the
+  scripts do the same. `BIC_G3_MC.m` takes the G = 15 groupings for sigma2_hat
+  from the G0 = 10 runs (`assignmentG010G15.txt`), which doubles the penalty and
+  is what produces the published 98% (see Validation); `BIC_SIGMA2 = 'g0_10'`
+  emulates it, and the default `'own'` follows the text.
 - **Misclassification.** `match_groups()` uses the Hungarian algorithm
   (`scipy.optimize.linear_sum_assignment`), which finds the exact minimum over
   all G! relabelings.
