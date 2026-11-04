@@ -142,3 +142,10 @@ Neither changes the results above.
 Bonhomme, S., and E. Manresa (2015). Grouped patterns of heterogeneity in panel
 data. *Econometrica*, 83(3), 1147-1184. Supplementary Appendix and replication
 files: https://sites.google.com/site/stephanebonhommeresearch/
+
+## Follow-up
+
+Why the BIC overstates G even with the true error variance in this design (the
+fit gained by splitting the largest true group is about the size of the penalty for
+an extra group) is worked out in [NOTE_BIC_overfit.md](NOTE_BIC_overfit.md)
+(`scripts/04c_bic_overfit.py`).
