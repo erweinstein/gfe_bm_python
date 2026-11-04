@@ -19,10 +19,16 @@ is not a fixed number of parameters, and it grows with the size of the group.
 
 A classical approximation makes this concrete. Splitting a normal sample of n
 points into two clusters by least squares reduces the within-cluster sum of
-squares by about (2/pi) times n times the variance along the leading direction
-(the half-normal mean; Hartigan 1978). In T dimensions, with n points and error
-variance sigma2, the largest sample eigenvalue is about sigma2 (1 + sqrt(T/n))^2
-(the upper edge of the Marchenko–Pastur law). So splitting a true group of n units
+squares by about (2/pi) times n times the variance along the direction of the
+split: in one dimension this is the half-normal mean (Hartigan 1978), and for a
+p-dimensional normal with a largest variance sigma_1^2, Hartigan (1978, section 7)
+conjectures that the optimal split is along that direction, with the sum of
+squares reduced by about (2/pi) n sigma_1^2. Our groups are spherical (equal
+error variance in every period), the case Hartigan leaves open; there the sample
+picks the direction in which its own variance is largest, so we replace sigma_1^2
+by the largest sample eigenvalue, about sigma2 (1 + sqrt(T/n))^2 (the upper edge of
+the Marchenko–Pastur law). This step is a heuristic, checked by simulation below.
+So splitting a true group of n units
 lowers the objective by about
 
     gain(n, T) ~ (2/pi) n sigma2 (1 + sqrt(T/n))^2,
@@ -92,8 +98,7 @@ gain is well above).
 - Bonhomme S, Manresa E (2015). Grouped patterns of heterogeneity in panel data.
   *Econometrica* 83(3), 1147–1184 (and Supplementary Appendix).
 - Hartigan JA (1978). Asymptotic distributions for clustering criteria. *Annals of
-  Statistics* 6(1), 117–131. (Citation details not checked against the journal page,
-  which blocks automated access.)
+  Statistics* 6(1), 117–131.
 - Liu R, Shang Z, Zhang Y, Zhou Q (2020). Identification and estimation in panel
   models with overspecified number of groups. *Journal of Econometrics* 215(2),
   574–590. https://doi.org/10.1016/j.jeconom.2019.09.008
