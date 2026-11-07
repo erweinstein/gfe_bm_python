@@ -99,6 +99,7 @@ scripts/03_exact_algorithm.py              Table S.I (exact vs heuristics)
 scripts/04_montecarlo.py                   Tables S.III-S.VIII, Figure S.1
 scripts/04b_bic_tableS8.py                 Table S.VIII under both readings of the BIC penalty
 scripts/04c_bic_overfit.py                 why the BIC overstates G there (NOTE_BIC_overfit.md)
+scripts/07_overspecified_G.py              extension: what choosing too many groups costs theta (NOTE_overspecified_G.md)
 scripts/05_extensions.py                   Tables S.XIV-S.XVI, Figures S.5-S.7
 scripts/06_explaining_the_waves.py         Tables S.XVII-S.XVIII
 tests/test_gfe.py           unit tests (pytest) against brute force, direct
@@ -249,6 +250,12 @@ the R translation to all printed digits.
   brings a new assignment of units, a gain the penalty does not count. The
   heuristic, and which part of it comes from Hartigan (1978), is in
   [`NOTE_BIC_overfit.md`](NOTE_BIC_overfit.md) (`scripts/04c_bic_overfit.py`).
+
+  Does it matter? In the same design, fitting G = 4, 5 or 6 left theta unbiased
+  but raised its SD by 1.2-2.0 times, and the large-T intervals, which do not
+  see the extra noise, covered 58-76% (85-87% at the true G). Details in
+  [`NOTE_overspecified_G.md`](NOTE_overspecified_G.md) (an extension, not part of
+  the replication).
 
 Not yet run at full size in Python: the N = 90 exact solution.
 
