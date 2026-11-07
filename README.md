@@ -245,6 +245,11 @@ the R translation to all printed digits.
   10; the R translation: G = 6 in 29 of 30) used the own-fit sigma2_hat over
   G = 1..6 and agree with the first row.
 
+  Why the BIC still prefers G = 4 with the true variance: an extra group also
+  brings a new assignment of units, a gain the penalty does not count. The
+  heuristic, and which part of it comes from Hartigan (1978), is in
+  [`NOTE_BIC_overfit.md`](NOTE_BIC_overfit.md) (`scripts/04c_bic_overfit.py`).
+
 Not yet run at full size in Python: the N = 90 exact solution.
 
 ---
