@@ -98,6 +98,7 @@ scripts/02_application_income_democracy.py Table S.XI, Figures 1, 2, S.4
 scripts/03_exact_algorithm.py              Table S.I (exact vs heuristics)
 scripts/04_montecarlo.py                   Tables S.III-S.VIII, Figure S.1
 scripts/04b_bic_tableS8.py                 Table S.VIII under both readings of the BIC penalty
+scripts/04c_bic_overfit.py                 why the BIC overstates G there (NOTE_BIC_overfit.md)
 scripts/05_extensions.py                   Tables S.XIV-S.XVI, Figures S.5-S.7
 scripts/06_explaining_the_waves.py         Tables S.XVII-S.XVIII
 tests/test_gfe.py           unit tests (pytest) against brute force, direct
