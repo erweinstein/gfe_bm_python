@@ -101,6 +101,33 @@ up, from G = 7 to 11 in 3, 7, 9, 9, 2 samples to G = 7 to 10 in 1, 6, 13, 10. Th
 authors' groupings came from their Fortran program (`MC1.exe`), which may have
 searched harder.
 
+**Confirmed with the authors' own files (16 November 2026;
+`scripts/04d_authors_groupings.py`, `output/tableS8_authors_*.csv`).** With the
+simulated samples (`inputMCXG10_BIC.txt`, `inputMCYG10_BIC.txt`) and the authors'
+groupings for G = 3 to 15 (`assignmentG010G3.txt` ... `G15.txt`) from the replication
+package, on the first 100 samples, as `BIC_G10_MC.m` uses them:
+
+| Objective used | sigma2_hat | G = 7 | G = 8 | G = 9 | G = 10 | G = 11 |
+|---|---|---|---|---|---|---|
+| The authors' groupings | 0.0156 | 0 | 10 | 42 | 42 | 6 |
+| Our Algorithm 1, 100 starts | 0.0164 | 1 | 33 | 46 | 17 | 3 |
+| The better of the two, sample by sample | 0.0156 | 0 | 9 | 44 | 42 | 5 |
+| Published (%) | | 0 | 10 | 42 | 42 | 6 |
+
+The authors' groupings reproduce the published column exactly, and our
+Algorithm 1 reproduces our earlier half-group shift. On these samples our
+Algorithm 1's objective is above the authors' in 31% of samples at G = 3, 70% at
+G = 6, 92% at G = 10 and 100% from G = 13 on (by 0.18 on average at G = 10 and
+0.38 at G = 15), and a local search from the authors' groupings never improves
+them. So the shift is search quality, as suspected, and it works mostly through
+the penalty: the weaker G = 15 fit raises sigma2_hat (0.0164 against 0.0156), and
+with it the penalty, which favours fewer groups. A search that is weak at large G
+biases the BIC toward too few groups even when sigma2_hat comes from the same
+sample. The authors' groupings are not global optima either: the Rust solver
+([gfe_bm_rust](https://github.com/erweinstein/gfe_bm_rust)) finds lower
+objectives than theirs for some samples and G (e.g. sample 1: G = 7, 9, 10, 11,
+13, 14); its full run on the same samples is reported there.
+
 ## What this means
 
 - The published G0 = 3 result reflects a penalty about twice as large as the one

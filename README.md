@@ -240,7 +240,11 @@ the R translation to all printed digits.
   Q(G) more the larger G was (by 0.05 at G = 6, 0.23 at G = 12), and moved the
   choice up, from G = 7-11 in 3, 7, 9, 9, 2 samples to G = 7-10 in 1, 6, 13, 10,
   closer to the published distribution. The authors' groupings came from their
-  Fortran program (MC1.exe), which may have searched harder.
+  Fortran program (MC1.exe), which searched harder: on the authors' own simulated
+  samples and groupings (`scripts/04d_authors_groupings.py`, 16 November 2026),
+  their groupings reproduce the published 10, 42, 42, 6 exactly, our Algorithm 1
+  with 100 starts gives 33, 46, 17, 3 (and G = 7 in 1), and its objective is above
+  theirs in most samples from G = 6 on. See NOTE_BIC_tableS8.md.
 
   Our earlier runs (VNS, as in `04_montecarlo.py`: G = 6 in 90 of 100, G = 5 in
   10; the R translation: G = 6 in 29 of 30) used the own-fit sigma2_hat over
