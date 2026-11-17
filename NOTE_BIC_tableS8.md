@@ -126,7 +126,12 @@ biases the BIC toward too few groups even when sigma2_hat comes from the same
 sample. The authors' groupings are not global optima either: the Rust solver
 ([gfe_bm_rust](https://github.com/erweinstein/gfe_bm_rust)) finds lower
 objectives than theirs for some samples and G (e.g. sample 1: G = 7, 9, 10, 11,
-13, 14); its full run on the same samples is reported there.
+13, 14). Over all 100 samples, some search improves on their grouping in 26-37% of
+samples at G = 6 to 14 but almost never at G = 15, so sigma2_hat is unchanged and the
+best fits choose G = 8, 9, 10, 11 in 9, 46, 40 and 5 samples: the published
+distribution survives better fits. Algorithm 1 with 1,000 starts still falls short
+from G = 13 on (sigma2_hat 0.0161; G = 10 in 32 samples), which confirms that a strong
+search at the largest G matters most (gfe_bm_rust README).
 
 ## What this means
 
